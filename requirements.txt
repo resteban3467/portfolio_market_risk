@@ -1,0 +1,4 @@
+pandas
+alpaca-trade-api 
+yfinance 
+fredapi
