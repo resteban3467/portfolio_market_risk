@@ -2,3 +2,8 @@ pandas
 alpaca-trade-api 
 yfinance 
 fredapi
+streamlit
+matplotlib
+quarto
+dotenv
+pathlib
