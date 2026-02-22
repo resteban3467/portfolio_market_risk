@@ -1,0 +1,7 @@
+pandas
+alpaca-trade-api
+yfinance
+fredapi
+streamlit
+matplotlib
+python-dotenv

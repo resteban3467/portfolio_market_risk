@@ -5,7 +5,7 @@ import pandas as pd
 from typing import List, Optional
 
 
-from src.config import config
+import config as cfg
 
 class CargaDatos:
     """
@@ -74,7 +74,7 @@ class CargaDatos:
         data.to_parquet(output_path)
         print(f"Datos guardados exitosamente en: {output_path}")
 
-instancia_config = config()
+instancia_config = cfg()
 datos = CargaDatos(api_key= instancia_config.key, secret_key= instancia_config.secret, base_url= instancia_config.base_url)
 datos_cartera = datos.get_tickers_cartera()
 print(datos_cartera)
