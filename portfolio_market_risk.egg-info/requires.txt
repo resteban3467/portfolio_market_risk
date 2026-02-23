@@ -5,3 +5,4 @@ fredapi
 streamlit
 matplotlib
 python-dotenv
+requests

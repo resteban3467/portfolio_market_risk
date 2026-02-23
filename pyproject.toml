@@ -16,7 +16,8 @@ dependencies = [
     "fredapi",
     "streamlit",
     "matplotlib",
-    "python-dotenv"
+    "python-dotenv",
+    "requests"
 ]
 
 [tool.setuptools.packages.find]

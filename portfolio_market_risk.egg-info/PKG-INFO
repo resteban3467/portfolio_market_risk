@@ -12,6 +12,7 @@ Requires-Dist: fredapi
 Requires-Dist: streamlit
 Requires-Dist: matplotlib
 Requires-Dist: python-dotenv
+Requires-Dist: requests
 Dynamic: license-file
 
 # portfolio_market_risk

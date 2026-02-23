@@ -5,7 +5,7 @@ import pandas as pd
 from typing import List, Optional
 
 
-import config as cfg
+import src.config as cfg
 
 class CargaDatos:
     """
@@ -18,6 +18,8 @@ class CargaDatos:
         """
         self.api = tradeapi.REST(api_key, secret_key, base_url, api_version='v2')
         self.tickers: List[str] = []
+
+ 
         
     def get_tickers_cartera(self) -> List[str]:
         """
@@ -34,7 +36,7 @@ class CargaDatos:
             print(f"No se pudo concretar la conexión por: {e}")
             return []
 
-    def fetch_market_data(self, fecha_inicio: str = fecha_inicio, include_benchmark: bool = True) -> pd.DataFrame:
+    def fetch_market_data(self, fecha_inicio: str, include_benchmark: bool) -> pd.DataFrame:
         """
         Descarga data histórica de yfinance basada en los tickers obtenidos.
         """
@@ -74,7 +76,7 @@ class CargaDatos:
         data.to_parquet(output_path)
         print(f"Datos guardados exitosamente en: {output_path}")
 
-instancia_config = cfg()
-datos = CargaDatos(api_key= instancia_config.key, secret_key= instancia_config.secret, base_url= instancia_config.base_url)
+datos = CargaDatos(api_key= cfg.key, secret_key= cfg.secret, base_url= cfg.base_url)
 datos_cartera = datos.get_tickers_cartera()
-print(datos_cartera)
+datos_mercado = datos.fetch_market_data(cfg.fecha_inicio, True)
+datos_mercado.head()
