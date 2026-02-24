@@ -18,7 +18,7 @@ api = tradeapi.REST(
 cartera  = {
     "VT": 10,
     "ECH": 20,
-    "SQM": 5,
+    "VNQ": 5,
     "GLD": 2,
     "AGG": 10
 }
