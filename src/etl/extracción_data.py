@@ -1,9 +1,7 @@
-import os
 import alpaca_trade_api as tradeapi
 from alpaca_trade_api.rest import TimeFrame
 import pandas as pd
-from typing import List, Optional
-
+from typing import List
 
 import src.config as cfg
 
@@ -67,6 +65,28 @@ class CargaDatos:
         except Exception as e:
             print(f"No se pudo descargar la data porque: {e}")
             return pd.DataFrame()
+    
+    def get_pesos_reales(self):
+
+        try:
+            positions = self.api.list_positions()
+            
+            # Crear un diccionario de {Ticker: Valor de Mercado}
+            valores = {pos.symbol: float(pos.market_value) for pos in positions}
+            total_cartera = sum(valores.values())
+            
+            # Calcular pesos: valor_activo / valor_total
+            pesos = {ticker: valor / total_cartera for ticker, valor in valores.items()}
+            
+            print("Pesos reales calculados por valor de mercado:")
+            for t, w in pesos.items():
+                print(f"  {t}: {w:.2%}")
+                
+            return pesos
+
+        except Exception as e:
+            print(f"No se pudieron descargar los valores de la cartera porque: {e}")
+            return {}
 
     def save_to_parquet(self, data: pd.DataFrame, filename: str = "market_data.parquet"):
         """
@@ -82,3 +102,9 @@ class CargaDatos:
             print(f"Datos guardados exitosamente en: {output_path}")
         except Exception as e:
             print(f"Los datos no se pudieron guardar porque: {e}")
+
+a = CargaDatos(cfg.key, cfg.secret, cfg.base_url)
+tick = a.get_tickers_cartera()
+b = a.get_pesos_reales()
+
+print(b)
