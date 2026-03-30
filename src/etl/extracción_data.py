@@ -3,7 +3,6 @@ from alpaca_trade_api.rest import TimeFrame
 import pandas as pd
 from typing import List
 
-import src.config as cfg
 
 class CargaDatos:
     """
@@ -38,6 +37,13 @@ class CargaDatos:
         """
         Extrae datos históricos ajustados directamente de Alpaca.
         """
+
+        if not self.tickers:
+            self.get_tickers_cartera()
+
+            if not self.tickers:
+                print("No se puede obtener los tickers ni descargar la info debido a esto")
+    
         print(f"Extrayendo datos de Alpaca para: {self.tickers}")
         
         try:
@@ -103,8 +109,3 @@ class CargaDatos:
         except Exception as e:
             print(f"Los datos no se pudieron guardar porque: {e}")
 
-a = CargaDatos(cfg.key, cfg.secret, cfg.base_url)
-tick = a.get_tickers_cartera()
-b = a.get_pesos_reales()
-
-print(b)

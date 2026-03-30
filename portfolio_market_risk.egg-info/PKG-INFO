@@ -7,12 +7,13 @@ Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: pandas
 Requires-Dist: alpaca-trade-api
-Requires-Dist: yfinance
 Requires-Dist: fredapi
 Requires-Dist: streamlit
 Requires-Dist: matplotlib
+Requires-Dist: seaborn
 Requires-Dist: python-dotenv
 Requires-Dist: requests
+Requires-Dist: scipy
 Dynamic: license-file
 
 # portfolio_market_risk

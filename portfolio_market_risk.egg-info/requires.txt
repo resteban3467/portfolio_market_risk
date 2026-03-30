@@ -1,8 +1,9 @@
 pandas
 alpaca-trade-api
-yfinance
 fredapi
 streamlit
 matplotlib
+seaborn
 python-dotenv
 requests
+scipy
