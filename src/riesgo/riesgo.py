@@ -31,6 +31,14 @@ class AnalisisRiesgo:
         self.retornos_portafolio = self.log_returns.dot(self.pesos)
         return self.retornos_portafolio
 
+    def calcular_matriz_correlacion(self):
+        """Calcula la matriz de correlación entre los instrumentos de la cartera."""
+        if self.log_returns is None:
+            self.calcular_log_returns()
+            
+        correlaciones = self.log_returns.corr()
+        return correlaciones
+
     def calcular_var_normal(self, confianza: float = 0.95, desv_estres = None):
         """VaR bajo el supuesto de distribución normal."""
         if self.retornos_portafolio is None: 
@@ -45,49 +53,58 @@ class AnalisisRiesgo:
 
         return media + z * desv
 
-    def calcular_var_cornish(self, confianza: float = 0.95, desv_estres = None):
-        """VaR ajustado por asimetría y curtosis (Cornish-Fisher)."""
+    def calcular_var_lognormal(self, confianza: float = 0.95, desv_estres = None, lambda_ewma: float = 0.94):
+        """VaR bajo el supuesto de distribución lognormal (retornos simples) con volatilidad EWMA."""
         if self.retornos_portafolio is None: 
             self.calcular_log_returns()
 
         media = self.retornos_portafolio.mean()
+        retornos = self.retornos_portafolio
 
         if not desv_estres:
-            desv = self.retornos_portafolio.std()
+            # Calcular volatilidad ponderada por EWMA
+            t = len(retornos)
+            pesos = (1 - lambda_ewma) * (lambda_ewma ** np.arange(t - 1, -1, -1))
+            pesos /= pesos.sum()
+            
+            varianza_ewma = np.sum(pesos * (retornos - media)**2)
+            desv = np.sqrt(varianza_ewma)
         else:
             desv = desv_estres
 
-        s = self.retornos_portafolio.skew()
-        k = self.retornos_portafolio.kurt() # Pandas calcula exceso de curtosis por defecto
-
         z = norm.ppf(1 - confianza)
     
-        # Fórmula de expansión de Cornish-Fisher
-        z_cf = (z + 
-                (1/6) * (z**2 - 1) * s + 
-                (1/24) * (z**3 - 3*z) * k - 
-                (1/36) * (2*z**3 - 5*z) * (s**2))
-        
-        return media + z_cf * desv
+        return np.exp(media + z * desv) - 1
 
 
-    def calcular_expected_shortfall(self, confianza: float = 0.95):
+    def calcular_expected_shortfall(self, confianza: float = 0.95, lambda_ewma: float = 0.94):
             """
-            Calcula el Expected Shortfall (Pérdida promedio en el peor escenario).
+            Calcula el Expected Shortfall (Pérdida promedio en el peor escenario)
+            ponderado por EWMA (Exponentially Weighted Moving Average).
             """
             if self.retornos_portafolio is None: 
                 self.calcular_log_returns()
                 
+            retornos = self.retornos_portafolio
+            
             # 1. Calculamos el VaR Histórico como umbral
-            var_umbral = self.retornos_portafolio.quantile(1 - confianza)
+            var_umbral = retornos.quantile(1 - confianza)
             
-            # 2. Filtramos solo los días donde la pérdida fue peor que el VaR
-            peores_casos = self.retornos_portafolio[self.retornos_portafolio <= var_umbral]
+            # 2. Creamos los pesos EWMA (mayor peso a observaciones más recientes)
+            t = len(retornos)
+            pesos = (1 - lambda_ewma) * (lambda_ewma ** np.arange(t - 1, -1, -1))
+            pesos /= pesos.sum() # Normalizamos para que la suma total sea 1
             
-            # 3. El promedio de esos peores casos es el ES
-            return peores_casos.mean()
+            # 3. Filtramos los retornos y sus pesos en los peores casos
+            mascara_peores = (retornos <= var_umbral).values
+            peores_casos = retornos.values[mascara_peores]
+            pesos_cola = pesos[mascara_peores]
+            
+            # 4. Normalizamos los pesos en la cola para que su suma sea 1 y calculamos el promedio ponderado
+            pesos_cola_norm = pesos_cola / pesos_cola.sum()
+            return np.sum(peores_casos * pesos_cola_norm)
 
-    def test_estres_volatilidad(self, factor_shock: float = 10.0, confianza: float = 0.95):
+    def test_estres_volatilidad(self, factor_shock: float = 2.0, confianza: float = 0.95):
             """
             Simula el impacto de un aumento súbito en la volatilidad del mercado.
             factor_shock=2.0 significa que la volatilidad se duplica.
@@ -102,10 +119,10 @@ class AnalisisRiesgo:
             
             var_estresado = self.calcular_var_normal(desv_estres= desv_estresada)   
 
-            var_cornis_fisher_estresado = self.calcular_var_cornish(desv_estres= desv_estresada)         
+            var_lognormal_estresado = self.calcular_var_lognormal(desv_estres= desv_estresada)         
             print(f"\n--- SHOCK DE VOLATILIDAD (Factor x{factor_shock}) ---")
             print(f"VaR Normal (Histórico): {self.calcular_var_normal():.2%}")
             print(f"VaR Estresado:          {var_estresado:.2%}")
-            print(f"VaR Cornish-Fisher Estresado:          {var_cornis_fisher_estresado :.2%}")
+            print(f"VaR Lognormal Estresado:          {var_lognormal_estresado :.2%}")
             
-            return var_estresado, var_cornis_fisher_estresado
+            return var_estresado, var_lognormal_estresado

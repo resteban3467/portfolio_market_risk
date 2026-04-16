@@ -15,13 +15,18 @@ riesgo = AnalisisRiesgo(pesos_dict = pesos_cartera)
 
 log_returns = riesgo.calcular_log_returns()
 
+correlaciones = riesgo.calcular_matriz_correlacion()
+print("\n--- MATRIZ DE CORRELACIONES ---")
+print(correlaciones)
+print("-------------------------------\n")
+
 var_norm = riesgo.calcular_var_normal()
 
-var_exp = riesgo.calcular_var_cornish()
+var_log = riesgo.calcular_var_lognormal()
 
 es = riesgo.calcular_expected_shortfall()
 
-print(f"El VaR normal es:{var_norm:.2%}, siendo que el Cornish-Fisher es de: {var_exp:.2%}, por su parte, el ES es de: {es:.2%}")
+print(f"El VaR normal es:{var_norm:.2%}, siendo que el Lognormal es de: {var_log:.2%}, por su parte, el ES es de: {es:.2%}")
 
 
 riesgo.test_estres_volatilidad()
