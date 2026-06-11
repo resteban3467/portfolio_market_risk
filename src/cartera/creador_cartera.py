@@ -1,32 +1,23 @@
 import alpaca_trade_api as tradeapi
-from src.config import config
+from alpaca_trade_api.rest import APIError
+from src.config import key, secret, base_url
 import time
-import os
-from dotenv import load_dotenv, dotenv_values
 
-# Conexión
-# Cargar información sensible
-load_dotenv() 
+api = tradeapi.REST(key, secret, base_url, api_version='v2')
 
-api = tradeapi.REST(
-    os.getenv("key"),
-    os.getenv("secret"),
-    base_url= 'https://paper-api.alpaca.markets'
-)
-
-# Establecer cartera
-cartera  = {
+CARTERA_OBJETIVO = {
     "VT": 10,
     "ECH": 20,
     "VNQ": 5,
     "GLD": 2,
-    "AGG": 10
+    "AGG": 10,
 }
 
-def comprar_todo():
+
+def comprar_todo() -> None:
     print("Iniciando compra de cartera...")
-    
-    for symbol, qty in cartera.items():
+
+    for symbol, qty in CARTERA_OBJETIVO.items():
         try:
             quote = api.get_latest_trade(symbol)
             price = quote.price
@@ -37,19 +28,21 @@ def comprar_todo():
                 qty=qty,
                 side='buy',
                 type='market',
-                time_in_force='day' 
+                time_in_force='day',
             )
             print(f"Orden enviada para {symbol}")
-            time.sleep(5) 
-            
+            time.sleep(5)
+
+        except APIError as e:
+            print(f"Error de API comprando {symbol}: {e}")
         except Exception as e:
-            print(f"Error comprando {symbol}: porque {e}")
+            print(f"Error inesperado comprando {symbol}: {e}")
+
 
 if __name__ == "__main__":
-
     clock = api.get_clock()
     if clock.is_open:
         comprar_todo()
     else:
-        print("El mercado está cerrado. Las órdenes quedarán agendadas para mañana.")
+        print("El mercado está cerrado. Las órdenes quedarán agendadas para el día siguiente.")
         comprar_todo()

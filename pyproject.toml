@@ -5,20 +5,25 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "portfolio_market_risk"
 version = "0.1.0"
-description = "Sistema de monitoreo de riesgo de mercado de portafolio."
+description = "Sistema de monitoreo de riesgo de mercado de portafolio con VaR, CVaR y volatilidad condicional EWMA."
 readme = "README.md"
-requires-python = ">=3.9" 
+requires-python = ">=3.10"
 
 dependencies = [
     "pandas",
+    "numpy",
+    "scipy",
     "alpaca-trade-api",
-    "fredapi",
-    "streamlit",
+    "python-dotenv",
+    "pyarrow",
     "matplotlib",
     "seaborn",
-    "python-dotenv",
-    "requests",
-    "scipy"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
 ]
 
 [tool.setuptools.packages.find]
